@@ -3,14 +3,14 @@
 all: clean build
 
 build:
-	go build -o bin/altum cmd/main.go
+	go build -o bin/tugle cmd/main.go
 
 run: all
 	@echo "\n--------"
 	@./bin/altum
 
 test:
-	@go test -v ./...
+	@go test -race -cover -coverprofile=coverage.out ./...
 
 clean:
 	rm -rf ./bin
