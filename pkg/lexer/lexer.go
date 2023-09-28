@@ -1,7 +1,5 @@
 package tugle
 
-import "strings"
-
 type void struct{}
 
 var nothing void
@@ -59,53 +57,6 @@ func (token *TToken) equal(other *TToken) bool {
 	return token.Value == other.Value && token.Type == other.Type
 }
 
-func matchBestOption(
-	source string,
-	inputCursor TCursor,
-	tokenOptions []TReservedToken,
-) string {
-	var currentValue []byte
-	var res string
-	irrelevantLocs := make(map[int]void)
-
-	curr := inputCursor
-
-	for curr.CurrPos < uint(len(source)) {
-		currentValue = append(currentValue, strings.ToLower(string(source[curr.CurrPos]))...)
-		curr.CurrPos++
-
-	res:
-		for i, option := range tokenOptions {
-			if _, ok := irrelevantLocs[i]; ok {
-				continue res
-			}
-
-			optionSV := string(option)
-			currentValueSV := string(currentValue)
-
-			if optionSV == currentValueSV {
-				irrelevantLocs[i] = nothing
-				if len(optionSV) > len(res) {
-					res = string(option)
-				}
-				continue
-			}
-
-			samePrefix := currentValueSV == optionSV[:curr.CurrPos-inputCursor.CurrPos]
-			tooLong := len(currentValue) > len(option)
-			if tooLong || !samePrefix {
-				irrelevantLocs[i] = nothing
-			}
-		}
-
-		if len(irrelevantLocs) == len(tokenOptions) {
-			break
-		}
-	}
-
-	return res
-}
-
 func checkReservedToken(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	curr := inputCursor
 
@@ -144,37 +95,28 @@ func checkNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	for ; curr.CurrPos < uint(len(source)); curr.CurrPos++ {
 		currChar := source[curr.CurrPos]
 
-		isDigit := currChar >= '0' && currChar <= '9'
-		isMantissa := currChar == '.'
-		isExponential := currChar == 'e'
-
-		if curr.CurrPos == inputCursor.CurrPos {
-			if !isDigit || !isMantissa {
-				return nil, inputCursor, false
-			}
-			hasMantissa = isMantissa
-
-			continue
+		if !checkStart(currChar, inputCursor, curr, &hasMantissa) {
+			return nil, inputCursor, false
+		} else if !checkMantissa(currChar, inputCursor, curr, &hasMantissa) {
+			return nil, inputCursor, false
+		} else if !checkExponential(source, inputCursor, curr, &hasMantissa, &hasExponent) {
+			return nil, inputCursor, false
 		}
 
-		if isMantissa {
-			if hasMantissa {
-				return nil, inputCursor, false
-			}
-			hasMantissa = true
-
-			continue
-		}
-
-		if isExponential {
-			if hasExponent {
-				return nil, inputCursor, false
-			}
-
+		if !(currChar >= '0' && currChar <= '9') {
+			break
 		}
 	}
 
-	return &TToken{Value: "", Type: ReservedType, Loc: inputCursor.Loc}, curr, false
+	if curr.CurrPos == inputCursor.CurrPos {
+		return nil, inputCursor, false
+	}
+
+	return &TToken{
+		Value: source[inputCursor.CurrPos:curr.CurrPos],
+		Type:  NumericType,
+		Loc:   inputCursor.Loc,
+	}, curr, false
 }
 
 type apply func(string, TCursor) (*TToken, TCursor, bool)
