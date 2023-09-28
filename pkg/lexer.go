@@ -135,4 +135,46 @@ func checkReservedToken(source string, inputCursor TCursor) (*TToken, TCursor, b
 	return &TToken{Value: match, Type: ReservedType, Loc: inputCursor.Loc}, curr, matchLen > 0
 }
 
+func checkNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
+	curr := inputCursor
+
+	hasMantissa := false
+	hasExponent := false
+
+	for ; curr.CurrPos < uint(len(source)); curr.CurrPos++ {
+		currChar := source[curr.CurrPos]
+
+		isDigit := currChar >= '0' && currChar <= '9'
+		isMantissa := currChar == '.'
+		isExponential := currChar == 'e'
+
+		if curr.CurrPos == inputCursor.CurrPos {
+			if !isDigit || !isMantissa {
+				return nil, inputCursor, false
+			}
+			hasMantissa = isMantissa
+
+			continue
+		}
+
+		if isMantissa {
+			if hasMantissa {
+				return nil, inputCursor, false
+			}
+			hasMantissa = true
+
+			continue
+		}
+
+		if isExponential {
+			if hasExponent {
+				return nil, inputCursor, false
+			}
+
+		}
+	}
+
+	return &TToken{Value: "", Type: ReservedType, Loc: inputCursor.Loc}, curr, false
+}
+
 type apply func(string, TCursor) (*TToken, TCursor, bool)
