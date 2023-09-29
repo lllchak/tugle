@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestToken_lexKeyword(testing *testing.T) {
+func TestLexer_CheckReservedKeyword(testing *testing.T) {
 	tests := []struct {
 		keyword bool
 		value   string
@@ -54,7 +54,7 @@ func TestToken_lexKeyword(testing *testing.T) {
 	}
 }
 
-func TestToken_lexNumeric(t *testing.T) {
+func TestLexer_CheckNumeric(t *testing.T) {
 	tests := []struct {
 		number bool
 		value  string
@@ -134,7 +134,7 @@ func TestToken_lexNumeric(t *testing.T) {
 	}
 }
 
-func TestToken_lexSymbol(t *testing.T) {
+func TestLexer_CheckSymbol(t *testing.T) {
 	tests := []struct {
 		symbol bool
 		value  string

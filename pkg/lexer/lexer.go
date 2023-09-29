@@ -1,9 +1,5 @@
 package lexer
 
-func (token *TToken) equal(other *TToken) bool {
-	return token.Value == other.Value && token.Type == other.Type
-}
-
 func CheckSymbol(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	if uint(len(source)) == 0 {
 		return nil, inputCursor, false

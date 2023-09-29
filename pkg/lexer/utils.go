@@ -107,3 +107,7 @@ func matchRegex(char []byte, pattern string) bool {
 
 	return regexp.Match(char)
 }
+
+func (token *TToken) equal(other *TToken) bool {
+	return token.Value == other.Value && token.Type == other.Type
+}
