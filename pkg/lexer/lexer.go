@@ -1,4 +1,4 @@
-package tugle
+package lexer
 
 type void struct{}
 
@@ -57,7 +57,7 @@ func (token *TToken) equal(other *TToken) bool {
 	return token.Value == other.Value && token.Type == other.Type
 }
 
-func checkReservedToken(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
+func CheckReservedToken(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	curr := inputCursor
 
 	reservedTokens := []TReservedToken{
@@ -86,24 +86,60 @@ func checkReservedToken(source string, inputCursor TCursor) (*TToken, TCursor, b
 	return &TToken{Value: match, Type: ReservedType, Loc: inputCursor.Loc}, curr, matchLen > 0
 }
 
-func checkNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
+func CheckNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	curr := inputCursor
 
-	hasMantissa := false
-	hasExponent := false
+	isFloat := false
+	isExponent := false
 
 	for ; curr.CurrPos < uint(len(source)); curr.CurrPos++ {
 		currChar := source[curr.CurrPos]
+		curr.Loc.Column++
 
-		if !checkStart(currChar, inputCursor, curr, &hasMantissa) {
-			return nil, inputCursor, false
-		} else if !checkMantissa(currChar, inputCursor, curr, &hasMantissa) {
-			return nil, inputCursor, false
-		} else if !checkExponential(source, inputCursor, curr, &hasMantissa, &hasExponent) {
-			return nil, inputCursor, false
+		isDigit := currChar >= '0' && currChar <= '9'
+		isPeriod := currChar == '.'
+		isExpMarker := currChar == 'e'
+
+		if curr.CurrPos == inputCursor.CurrPos {
+			if !isDigit && !isPeriod {
+				return nil, inputCursor, false
+			}
+
+			isFloat = isPeriod
+			continue
 		}
 
-		if !(currChar >= '0' && currChar <= '9') {
+		if isPeriod {
+			if isFloat {
+				return nil, inputCursor, false
+			}
+
+			isFloat = true
+			continue
+		}
+
+		if isExpMarker {
+			if isExponent {
+				return nil, inputCursor, false
+			}
+
+			isFloat = true
+			isExponent = true
+
+			if curr.CurrPos == uint(len(source)-1) {
+				return nil, inputCursor, false
+			}
+
+			nextChar := source[curr.CurrPos+1]
+			if nextChar == '-' || nextChar == '+' {
+				curr.CurrPos++
+				curr.Loc.Column++
+			}
+
+			continue
+		}
+
+		if !isDigit {
 			break
 		}
 	}
@@ -116,7 +152,7 @@ func checkNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 		Value: source[inputCursor.CurrPos:curr.CurrPos],
 		Type:  NumericType,
 		Loc:   inputCursor.Loc,
-	}, curr, false
+	}, curr, true
 }
 
 type apply func(string, TCursor) (*TToken, TCursor, bool)
