@@ -133,3 +133,56 @@ func TestToken_lexNumeric(t *testing.T) {
 		}
 	}
 }
+
+func TestToken_lexSymbol(t *testing.T) {
+	tests := []struct {
+		symbol bool
+		value  string
+	}{
+		{
+			symbol: true,
+			value:  "* ",
+		},
+		{
+			symbol: true,
+			value:  ";",
+		},
+		{
+			symbol: true,
+			value:  "(",
+		},
+		{
+			symbol: true,
+			value:  ")",
+		},
+		{
+			symbol: false,
+			value:  "\n",
+		},
+		{
+			symbol: false,
+			value:  "\t",
+		},
+		{
+			symbol: false,
+			value:  "",
+		},
+		{
+			symbol: false,
+			value:  "=",
+		},
+		{
+			symbol: false,
+			value:  " ",
+		},
+	}
+
+	for _, test := range tests {
+		tok, _, ok := lexer.CheckSymbol(test.value, lexer.TCursor{})
+		assert.Equal(t, test.symbol, ok, test.value)
+		if ok {
+			test.value = strings.TrimSpace(test.value)
+			assert.Equal(t, test.value, tok.Value, test.value)
+		}
+	}
+}

@@ -10,7 +10,7 @@ run: all
 	@./bin/tugle
 
 test:
-	@go test -race -cover -coverprofile=coverage.out ./pkg/tests
+	@go test -race -cover -coverprofile=coverage.out -coverpkg=./pkg/... ./pkg/tests
 
 clean:
 	rm -rf ./bin
