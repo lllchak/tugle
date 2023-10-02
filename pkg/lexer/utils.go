@@ -70,6 +70,8 @@ func checkDelimeted(source string, inputCursor TCursor, delimeter byte) (*TToken
 
 		if currChar == delimeter {
 			if curr.CurrPos+1 >= uint(len(source)) || source[curr.CurrPos+1] != delimeter {
+				curr.CurrPos++
+				curr.Loc.Column++
 				return &TToken{Value: string(resMatch), Type: StringType, Loc: inputCursor.Loc}, curr, true
 			} else {
 				resMatch = append(resMatch, currChar)

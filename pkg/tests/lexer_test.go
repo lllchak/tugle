@@ -156,11 +156,15 @@ func TestLexer_CheckSymbol(t *testing.T) {
 			value:  ")",
 		},
 		{
-			symbol: false,
+			symbol: true,
+			value:  " ",
+		},
+		{
+			symbol: true,
 			value:  "\n",
 		},
 		{
-			symbol: false,
+			symbol: true,
 			value:  "\t",
 		},
 		{
@@ -171,10 +175,6 @@ func TestLexer_CheckSymbol(t *testing.T) {
 			symbol: false,
 			value:  "=",
 		},
-		{
-			symbol: false,
-			value:  " ",
-		},
 	}
 
 	for _, test := range tests {
@@ -182,7 +182,9 @@ func TestLexer_CheckSymbol(t *testing.T) {
 		assert.Equal(t, test.symbol, ok, test.value)
 		if ok {
 			test.value = strings.TrimSpace(test.value)
-			assert.Equal(t, test.value, tok.Value, test.value)
+			if len(test.value) > 0 {
+				assert.Equal(t, test.value, tok.Value, test.value)
+			}
 		}
 	}
 }
@@ -251,6 +253,55 @@ func TestToken_CheckIdentifier(t *testing.T) {
 		assert.Equal(t, test.identifier, ok, test.input)
 		if ok {
 			assert.Equal(t, test.value, tok.Value, test.input)
+		}
+	}
+}
+
+func TestToken_CheckString(t *testing.T) {
+	tests := []struct {
+		string bool
+		value  string
+	}{
+		{
+			string: false,
+			value:  "a",
+		},
+		{
+			string: true,
+			value:  "'abc'",
+		},
+		{
+			string: true,
+			value:  "'a b'",
+		},
+		{
+			string: true,
+			value:  "'a' ",
+		},
+		{
+			string: true,
+			value:  "'a '' b'",
+		},
+		{
+			string: false,
+			value:  "'",
+		},
+		{
+			string: false,
+			value:  "",
+		},
+		{
+			string: false,
+			value:  " 'foo'",
+		},
+	}
+
+	for _, test := range tests {
+		tok, _, ok := lexer.CheckString(test.value, lexer.TCursor{})
+		assert.Equal(t, test.string, ok, test.value)
+		if ok {
+			test.value = strings.TrimSpace(test.value)
+			assert.Equal(t, test.value[1:len(test.value)-1], tok.Value, test.value)
 		}
 	}
 }

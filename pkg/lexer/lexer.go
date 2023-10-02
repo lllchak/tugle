@@ -10,9 +10,8 @@ func CheckSymbol(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 		return nil, inputCursor, false
 	}
 
-	curr := inputCursor
-
 	currChar := source[inputCursor.CurrPos]
+	curr := inputCursor
 
 	curr.CurrPos++
 	curr.Loc.Column++
@@ -26,7 +25,7 @@ func CheckSymbol(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 		fallthrough
 	default:
 		if matchRegex([]byte{currChar}, "\\s") {
-			return nil, inputCursor, false
+			return nil, curr, true
 		}
 	}
 
@@ -151,6 +150,7 @@ func CheckNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 
 func CheckIdentifier(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	if token, curr, ok := checkDelimeted(source, inputCursor, '"'); ok {
+		token.Type = IdentifierType
 		return token, curr, ok
 	}
 
@@ -178,10 +178,6 @@ func CheckIdentifier(source string, inputCursor TCursor) (*TToken, TCursor, bool
 		}
 
 		break
-	}
-
-	if uint(len(match)) == 0 {
-		return nil, inputCursor, false
 	}
 
 	return &TToken{
@@ -215,13 +211,13 @@ Tokenize:
 
 				continue Tokenize
 			}
-
-			hint := ""
-			if len(tokens) > 0 {
-				hint = "after " + tokens[len(tokens)-1].Value
-			}
-			return nil, fmt.Errorf("Unable to lex token %s, at %d:%d", hint, curr.Loc.Line, curr.Loc.Column)
 		}
+
+		hint := ""
+		if len(tokens) > 0 {
+			hint = "after " + tokens[len(tokens)-1].Value
+		}
+		return nil, fmt.Errorf("Unable to lex token %s, at %d:%d", hint, curr.Loc.Line, curr.Loc.Column)
 	}
 
 	return tokens, nil

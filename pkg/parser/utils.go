@@ -142,8 +142,8 @@ func parseSelectStatement(
 	inputCursor uint,
 	delimeter lexer.TToken,
 ) (*ast.TSelectStatement, uint, bool) {
-	var ok bool
 	curr := inputCursor
+	ok := false
 
 	_, curr, ok = parseToken(tokens, curr, *lexer.SelectToken.AsToken())
 	if !ok {
@@ -168,9 +168,84 @@ func parseSelectStatement(
 			return nil, inputCursor, false
 		}
 
-		resStatement.From = from
+		resStatement.From = *from
 		curr = currCursor
 	}
 
 	return &resStatement, curr, true
+}
+
+func parseInsertStatement(
+	tokens []*lexer.TToken,
+	inputCursor uint,
+	_ lexer.TToken,
+) (*ast.TInsertStatement, uint, bool) {
+	curr := inputCursor
+	ok := false
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.InsertToken.AsToken())
+	if !ok {
+		return nil, inputCursor, ok
+	}
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.IntoToken.AsToken())
+	if !ok {
+		return nil, inputCursor, ok
+	}
+
+	tableName, currCursor, ok := parseTokenType(tokens, curr, lexer.IdentifierType)
+	if !ok {
+		logInfo(tokens, curr, "Expected table name")
+		return nil, inputCursor, ok
+	}
+	curr = currCursor
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.ValuesToken.AsToken())
+	if !ok {
+		logInfo(tokens, curr, "Expected VALUES statement")
+		return nil, inputCursor, ok
+	}
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.LeftParenthToken.AsToken())
+	if !ok {
+		logInfo(tokens, curr, "Expected expressions group opening (maybe you forgot opening parenthesis)")
+		return nil, inputCursor, ok
+	}
+
+	values, currCursor, ok := parseExpressions(tokens, curr, []lexer.TToken{*lexer.RightParenthToken.AsToken()})
+	if !ok {
+		logInfo(tokens, curr, "Expected values")
+		return nil, inputCursor, ok
+	}
+	curr = currCursor
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.RightParenthToken.AsToken())
+	if !ok {
+		logInfo(tokens, curr, "Expression way never closed")
+		return nil, inputCursor, ok
+	}
+
+	return &ast.TInsertStatement{
+		Table:  *tableName,
+		Values: values,
+	}, curr, ok
+}
+
+func parseStatement(
+	tokens []*lexer.TToken,
+	inputCursor uint,
+	delimeter lexer.TToken,
+) (*ast.TStatement, uint, bool) {
+	curr := inputCursor
+	semicolonToken := lexer.SemicolonToken.AsToken()
+
+	selectStatement, currCursor, ok := parseSelectStatement(tokens, curr, *semicolonToken)
+	if ok {
+		return &ast.TStatement{
+			Select: selectStatement,
+			Type:   ast.SelectType,
+		}, currCursor, ok
+	}
+
+	return nil, inputCursor, false
 }

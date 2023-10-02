@@ -36,15 +36,17 @@ type TCreateTableStatement struct {
 }
 
 type TSelectStatement struct {
-	From  *lexer.TToken
+	From  lexer.TToken
 	Rules []*TExpression
 }
 
-type Statement struct {
-	Insert *TInsertStatement
-	Type   TStatementType
+type TStatement struct {
+	CreateTable *TCreateTableStatement
+	Select      *TSelectStatement
+	Insert      *TInsertStatement
+	Type        TStatementType
 }
 
 type TSyntaxTree struct {
-	Statements []*Statement
+	Statements []*TStatement
 }
