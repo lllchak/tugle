@@ -7,10 +7,10 @@ build:
 
 run: all
 	@echo "\n--------"
-	@./bin/altum
+	@./bin/tugle
 
 test:
-	@go test -race -cover -coverprofile=coverage.out ./...
+	@go test -race -cover -coverprofile=coverage.out -coverpkg=./pkg/... ./pkg/tests
 
 clean:
 	rm -rf ./bin
