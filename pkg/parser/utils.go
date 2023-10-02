@@ -163,7 +163,7 @@ func parseSelectStatement(
 	_, curr, ok = parseToken(tokens, curr, fromToken)
 	if ok {
 		from, currCursor, ok := parseTokenType(tokens, curr, lexer.IdentifierType)
-		if ok {
+		if !ok {
 			logInfo(tokens, curr, "Expected FROM statement")
 			return nil, inputCursor, false
 		}
