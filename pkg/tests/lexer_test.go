@@ -186,3 +186,71 @@ func TestLexer_CheckSymbol(t *testing.T) {
 		}
 	}
 }
+
+func TestToken_CheckIdentifier(t *testing.T) {
+	tests := []struct {
+		identifier bool
+		input      string
+		value      string
+	}{
+		{
+			identifier: true,
+			input:      "a",
+			value:      "a",
+		},
+		{
+			identifier: true,
+			input:      "abc",
+			value:      "abc",
+		},
+		{
+			identifier: true,
+			input:      "abc ",
+			value:      "abc",
+		},
+		{
+			identifier: true,
+			input:      `" abc "`,
+			value:      ` abc `,
+		},
+		{
+			identifier: true,
+			input:      "a9$",
+			value:      "a9$",
+		},
+		{
+			identifier: true,
+			input:      "userName",
+			value:      "username",
+		},
+		{
+			identifier: true,
+			input:      `"userName"`,
+			value:      "userName",
+		},
+		{
+			identifier: false,
+			input:      `"`,
+		},
+		{
+			identifier: false,
+			input:      "_sadsfa",
+		},
+		{
+			identifier: false,
+			input:      "9sadsfa",
+		},
+		{
+			identifier: false,
+			input:      " abc",
+		},
+	}
+
+	for _, test := range tests {
+		tok, _, ok := lexer.CheckIdentifier(test.input, lexer.TCursor{})
+		assert.Equal(t, test.identifier, ok, test.input)
+		if ok {
+			assert.Equal(t, test.value, tok.Value, test.input)
+		}
+	}
+}

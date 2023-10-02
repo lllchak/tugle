@@ -1,5 +1,7 @@
 package lexer
 
+import "strings"
+
 func CheckSymbol(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	if uint(len(source)) == 0 {
 		return nil, inputCursor, false
@@ -85,7 +87,7 @@ func CheckNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 		currChar := source[curr.CurrPos]
 		curr.Loc.Column++
 
-		isDigit := currChar >= '0' && currChar <= '9'
+		isDigit := isNumeric(currChar)
 		isPeriod := currChar == '.'
 		isExpMarker := currChar == 'e'
 
@@ -140,6 +142,48 @@ func CheckNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	return &TToken{
 		Value: source[inputCursor.CurrPos:curr.CurrPos],
 		Type:  NumericType,
+		Loc:   inputCursor.Loc,
+	}, curr, true
+}
+
+func CheckIdentifier(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
+	if token, curr, ok := checkDelimeted(source, inputCursor, '"'); ok {
+		return token, curr, ok
+	}
+
+	curr := inputCursor
+	currChar := source[curr.CurrPos]
+
+	isAlpha := isLetter(currChar)
+	if !isAlpha {
+		return nil, inputCursor, false
+	}
+	curr.CurrPos++
+	curr.Loc.Column++
+
+	match := []byte{currChar}
+	for ; curr.CurrPos < uint(len(source)); curr.CurrPos++ {
+		currChar := source[curr.CurrPos]
+
+		isAlpha := isLetter(currChar)
+		isNumeric := isNumeric(currChar)
+
+		if isAlpha || isNumeric || currChar == '$' || currChar == '_' {
+			match = append(match, currChar)
+			curr.Loc.Column++
+			continue
+		}
+
+		break
+	}
+
+	if uint(len(match)) == 0 {
+		return nil, inputCursor, false
+	}
+
+	return &TToken{
+		Value: strings.ToLower(string(match)),
+		Type:  IdentifierType,
 		Loc:   inputCursor.Loc,
 	}, curr, true
 }

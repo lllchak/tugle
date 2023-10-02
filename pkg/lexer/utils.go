@@ -108,6 +108,14 @@ func matchRegex(char []byte, pattern string) bool {
 	return regexp.Match(char)
 }
 
+func isNumeric(char byte) bool {
+	return char >= '0' && char <= '9'
+}
+
+func isLetter(char byte) bool {
+	return (char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z')
+}
+
 func (token *TToken) equal(other *TToken) bool {
 	return token.Value == other.Value && token.Type == other.Type
 }
