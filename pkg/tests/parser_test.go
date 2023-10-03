@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"pkg/ast"
 	"pkg/lexer"
 	"pkg/parser"
@@ -41,7 +40,7 @@ func TestParse(t *testing.T) {
 								},
 							},
 							From: lexer.TToken{
-								Loc:   lexer.TTokenLocation{Column: 33, Line: 0},
+								Loc:   lexer.TTokenLocation{Column: 21, Line: 0},
 								Type:  lexer.IdentifierType,
 								Value: "sketchy name",
 							},
@@ -53,7 +52,6 @@ func TestParse(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		fmt.Println("(Parser) Testing: ", test.source)
 		ast, err := parser.Parse(test.source)
 		assert.Nil(t, err, test.source)
 		assert.Equal(t, test.ast, ast, test.source)

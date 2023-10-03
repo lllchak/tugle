@@ -6,20 +6,6 @@ import (
 	"pkg/lexer"
 )
 
-func tokenFromReservedToken(reservedToken lexer.TReservedToken) lexer.TToken {
-	return lexer.TToken{
-		Value: string(reservedToken),
-		Type:  lexer.ReservedType,
-	}
-}
-
-func tokenFromSymbol(symbol lexer.TSymbolToken) lexer.TToken {
-	return lexer.TToken{
-		Value: string(symbol),
-		Type:  lexer.SymbolType,
-	}
-}
-
 func logInfo(tokens []*lexer.TToken, cursor uint, message string) {
 	var curr *lexer.TToken
 

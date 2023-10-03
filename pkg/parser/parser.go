@@ -2,14 +2,12 @@ package parser
 
 import (
 	"errors"
-	"fmt"
 	"pkg/ast"
 	"pkg/lexer"
 )
 
 func Parse(source string) (*ast.TSyntaxTree, error) {
 	tokens, err := lexer.Tokenize(source)
-	fmt.Println()
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +33,7 @@ func Parse(source string) (*ast.TSyntaxTree, error) {
 		hasSemicolon := false
 		for {
 			_, curr, hasSemicolon = parseToken(tokens, curr, *semicolonToken)
-			if !hasSemicolon {
+			if hasSemicolon {
 				break
 			}
 		}
