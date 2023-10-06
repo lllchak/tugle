@@ -1,15 +1,17 @@
 package lexer
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 func CheckSymbol(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	if uint(len(source)) == 0 {
 		return nil, inputCursor, false
 	}
 
-	curr := inputCursor
-
 	currChar := source[inputCursor.CurrPos]
+	curr := inputCursor
 
 	curr.CurrPos++
 	curr.Loc.Column++
@@ -23,7 +25,7 @@ func CheckSymbol(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 		fallthrough
 	default:
 		if matchRegex([]byte{currChar}, "\\s") {
-			return nil, inputCursor, false
+			return nil, curr, true
 		}
 	}
 
@@ -148,6 +150,7 @@ func CheckNumeric(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 
 func CheckIdentifier(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
 	if token, curr, ok := checkDelimeted(source, inputCursor, '"'); ok {
+		token.Type = IdentifierType
 		return token, curr, ok
 	}
 
@@ -177,10 +180,6 @@ func CheckIdentifier(source string, inputCursor TCursor) (*TToken, TCursor, bool
 		break
 	}
 
-	if uint(len(match)) == 0 {
-		return nil, inputCursor, false
-	}
-
 	return &TToken{
 		Value: strings.ToLower(string(match)),
 		Type:  IdentifierType,
@@ -188,4 +187,38 @@ func CheckIdentifier(source string, inputCursor TCursor) (*TToken, TCursor, bool
 	}, curr, true
 }
 
+func CheckString(source string, inputCursor TCursor) (*TToken, TCursor, bool) {
+	return checkDelimeted(source, inputCursor, '\'')
+}
+
 type apply func(string, TCursor) (*TToken, TCursor, bool)
+
+func Tokenize(source string) ([]*TToken, error) {
+	tokens := []*TToken{}
+	curr := TCursor{}
+
+Tokenize:
+	for curr.CurrPos < uint(len(source)) {
+		lexers := []apply{CheckReservedToken, CheckSymbol, CheckString, CheckNumeric, CheckIdentifier}
+
+		for _, lexer := range lexers {
+			if token, currCursor, ok := lexer(source, curr); ok {
+				curr = currCursor
+
+				if token != nil {
+					tokens = append(tokens, token)
+				}
+
+				continue Tokenize
+			}
+		}
+
+		hint := ""
+		if len(tokens) > 0 {
+			hint = "after " + tokens[len(tokens)-1].Value
+		}
+		return nil, fmt.Errorf("Unable to lex token %s, at %d:%d", hint, curr.Loc.Line, curr.Loc.Column)
+	}
+
+	return tokens, nil
+}

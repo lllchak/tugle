@@ -70,6 +70,8 @@ func checkDelimeted(source string, inputCursor TCursor, delimeter byte) (*TToken
 
 		if currChar == delimeter {
 			if curr.CurrPos+1 >= uint(len(source)) || source[curr.CurrPos+1] != delimeter {
+				curr.CurrPos++
+				curr.Loc.Column++
 				return &TToken{Value: string(resMatch), Type: StringType, Loc: inputCursor.Loc}, curr, true
 			} else {
 				resMatch = append(resMatch, currChar)
@@ -116,6 +118,20 @@ func isLetter(char byte) bool {
 	return (char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z')
 }
 
-func (token *TToken) equal(other *TToken) bool {
+func (token *TToken) Equal(other *TToken) bool {
 	return token.Value == other.Value && token.Type == other.Type
+}
+
+func (reservedToken TReservedToken) AsToken() *TToken {
+	return &TToken{
+		Value: string(reservedToken),
+		Type:  ReservedType,
+	}
+}
+
+func (symbolToken TSymbolToken) AsToken() *TToken {
+	return &TToken{
+		Value: string(symbolToken),
+		Type:  SymbolType,
+	}
 }
