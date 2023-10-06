@@ -2,15 +2,15 @@ package ast
 
 import "pkg/lexer"
 
-type TStatementType uint
-type TExpressionType uint
+type EStatementType uint
+type EExpressionType uint
 
 const (
-	LiteralType TExpressionType = iota
+	LiteralType EExpressionType = iota
 )
 
 const (
-	SelectType TStatementType = iota
+	SelectType EStatementType = iota
 	CreateTableType
 	InsertType
 )
@@ -22,7 +22,7 @@ type TColumnMeta struct {
 
 type TExpression struct {
 	Literal *lexer.TToken
-	Type    TExpressionType
+	Type    EExpressionType
 }
 
 type TInsertStatement struct {
@@ -44,7 +44,7 @@ type TStatement struct {
 	CreateTable *TCreateTableStatement
 	Select      *TSelectStatement
 	Insert      *TInsertStatement
-	Type        TStatementType
+	Type        EStatementType
 }
 
 type TSyntaxTree struct {

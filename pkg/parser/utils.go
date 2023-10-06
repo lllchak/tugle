@@ -132,9 +132,13 @@ func parseColumnMeta(
 
 	columnsMeta := []*ast.TColumnMeta{}
 
-	for currToken := tokens[curr]; delimeter.Equal(currToken); {
+	for {
 		if curr >= uint(len(tokens)) {
 			return nil, inputCursor, false
+		}
+
+		if currToken := tokens[curr]; delimeter.Equal(currToken) {
+			break
 		}
 
 		if len(columnsMeta) > 0 {
@@ -172,8 +176,48 @@ func parseColumnMeta(
 func parseCreateTableStatement(
 	tokens []*lexer.TToken,
 	inputCursor uint,
-	delimeter lexer.TToken
-)
+	delimeter lexer.TToken,
+) (*ast.TCreateTableStatement, uint, bool) {
+	curr := inputCursor
+	ok := false
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.CreateToken.AsToken())
+	if !ok {
+		return nil, inputCursor, false
+	}
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.TableToken.AsToken())
+	if !ok {
+		return nil, inputCursor, false
+	}
+
+	tableName, currCursor, ok := parseTokenType(tokens, curr, lexer.IdentifierType)
+	if !ok {
+		return nil, inputCursor, false
+	}
+	curr = currCursor
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.LeftParenthToken.AsToken())
+	if !ok {
+		return nil, inputCursor, false
+	}
+
+	columnsDesc, currCursor, ok := parseColumnMeta(tokens, curr, *lexer.RightParenthToken.AsToken())
+	if !ok {
+		return nil, inputCursor, false
+	}
+	curr = currCursor
+
+	_, curr, ok = parseToken(tokens, curr, *lexer.RightParenthToken.AsToken())
+	if !ok {
+		return nil, inputCursor, false
+	}
+
+	return &ast.TCreateTableStatement{
+		TableName: *tableName,
+		Columns:   columnsDesc,
+	}, curr, true
+}
 
 func parseSelectStatement(
 	tokens []*lexer.TToken,
@@ -288,6 +332,13 @@ func parseStatement(
 		return &ast.TStatement{
 			Insert: insertStatemt,
 			Type:   ast.InsertType,
+		}, currCursor, ok
+	}
+
+	if createTableStatement, currCursor, ok := parseCreateTableStatement(tokens, curr, *semicolonToken); ok {
+		return &ast.TStatement{
+			CreateTable: createTableStatement,
+			Type:        ast.CreateTableType,
 		}, currCursor, ok
 	}
 

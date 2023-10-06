@@ -188,6 +188,49 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			source: "CREATE TABLE users (id INT, name TEXT)",
+			ast: &ast.TSyntaxTree{
+				Statements: []*ast.TStatement{
+					{
+						Type: ast.CreateTableType,
+						CreateTable: &ast.TCreateTableStatement{
+							TableName: lexer.TToken{
+								Loc:   lexer.TTokenLocation{Column: 13, Line: 0},
+								Type:  lexer.IdentifierType,
+								Value: "users",
+							},
+							Columns: &[]*ast.TColumnMeta{
+								{
+									Name: lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 20, Line: 0},
+										Type:  lexer.IdentifierType,
+										Value: "id",
+									},
+									Datatype: lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 23, Line: 0},
+										Type:  lexer.ReservedType,
+										Value: "int",
+									},
+								},
+								{
+									Name: lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 28, Line: 0},
+										Type:  lexer.IdentifierType,
+										Value: "name",
+									},
+									Datatype: lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 33, Line: 0},
+										Type:  lexer.ReservedType,
+										Value: "text",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
