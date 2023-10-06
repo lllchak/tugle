@@ -31,7 +31,7 @@ func isDelimeter(candidate *lexer.TToken, delimeters *[]lexer.TToken) bool {
 func parseTokenType(
 	tokens []*lexer.TToken,
 	initialCursor uint,
-	ttype lexer.TTokenType,
+	ttype lexer.ETokenType,
 ) (*lexer.TToken, uint, bool) {
 	cursor := initialCursor
 
@@ -67,7 +67,7 @@ func parseExpression(
 ) (*ast.TExpression, uint, bool) {
 	curr := inputCursor
 
-	types := []lexer.TTokenType{lexer.IdentifierType, lexer.NumericType, lexer.StringType}
+	types := []lexer.ETokenType{lexer.IdentifierType, lexer.NumericType, lexer.StringType}
 
 	for _, ttype := range types {
 		if currToken, currCursor, ok := parseTokenType(tokens, curr, ttype); ok {
@@ -168,6 +168,12 @@ func parseColumnMeta(
 
 	return &columnsMeta, curr, true
 }
+
+func parseCreateTableStatement(
+	tokens []*lexer.TToken,
+	inputCursor uint,
+	delimeter lexer.TToken
+)
 
 func parseSelectStatement(
 	tokens []*lexer.TToken,

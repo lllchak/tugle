@@ -6,7 +6,7 @@ var nothing void
 
 type TReservedToken string
 type TSymbolToken string
-type TTokenType uint
+type ETokenType uint
 
 type TTokenLocation struct {
 	Line   uint
@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	ReservedType TTokenType = iota
+	ReservedType ETokenType = iota
 	SymbolType
 	IdentifierType
 	StringType
@@ -44,7 +44,7 @@ const (
 
 type TToken struct {
 	Value string
-	Type  TTokenType
+	Type  ETokenType
 	Loc   TTokenLocation
 }
 
