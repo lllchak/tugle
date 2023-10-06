@@ -271,11 +271,17 @@ func parseStatement(
 	curr := inputCursor
 	semicolonToken := lexer.SemicolonToken.AsToken()
 
-	selectStatement, currCursor, ok := parseSelectStatement(tokens, curr, *semicolonToken)
-	if ok {
+	if selectStatement, currCursor, ok := parseSelectStatement(tokens, curr, *semicolonToken); ok {
 		return &ast.TStatement{
 			Select: selectStatement,
 			Type:   ast.SelectType,
+		}, currCursor, ok
+	}
+
+	if insertStatemt, currCursor, ok := parseInsertStatement(tokens, curr, *semicolonToken); ok {
+		return &ast.TStatement{
+			Insert: insertStatemt,
+			Type:   ast.InsertType,
 		}, currCursor, ok
 	}
 

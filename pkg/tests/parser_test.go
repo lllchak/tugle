@@ -122,6 +122,72 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			source: "INSERT INTO users VALUES (105, string)",
+			ast: &ast.TSyntaxTree{
+				Statements: []*ast.TStatement{
+					{
+						Type: ast.InsertType,
+						Insert: &ast.TInsertStatement{
+							Table: lexer.TToken{
+								Loc:   lexer.TTokenLocation{Column: 12, Line: 0},
+								Type:  lexer.IdentifierType,
+								Value: "users",
+							},
+							Values: &[]*ast.TExpression{
+								{
+									Literal: &lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 26, Line: 0},
+										Type:  lexer.NumericType,
+										Value: "105",
+									}, Type: ast.LiteralType,
+								},
+								{
+									Literal: &lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 32, Line: 0},
+										Type:  lexer.IdentifierType,
+										Value: "string",
+									}, Type: ast.LiteralType,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			source: "INSERT INTO users VALUES (105, 'string')",
+			ast: &ast.TSyntaxTree{
+				Statements: []*ast.TStatement{
+					{
+						Type: ast.InsertType,
+						Insert: &ast.TInsertStatement{
+							Table: lexer.TToken{
+								Loc:   lexer.TTokenLocation{Column: 12, Line: 0},
+								Type:  lexer.IdentifierType,
+								Value: "users",
+							},
+							Values: &[]*ast.TExpression{
+								{
+									Literal: &lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 26, Line: 0},
+										Type:  lexer.NumericType,
+										Value: "105",
+									}, Type: ast.LiteralType,
+								},
+								{
+									Literal: &lexer.TToken{
+										Loc:   lexer.TTokenLocation{Column: 32, Line: 0},
+										Type:  lexer.StringType,
+										Value: "string",
+									}, Type: ast.LiteralType,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
