@@ -60,52 +60,6 @@ func parseToken(tokens []*lexer.TToken, inputCursor uint, candToken lexer.TToken
 	return nil, inputCursor, false
 }
 
-func parseColumnMeta(
-	tokens []*lexer.TToken,
-	inputCursor uint,
-	delimeter lexer.TToken,
-) (*[]*ast.TColumnMeta, uint, bool) {
-	curr := inputCursor
-
-	columnsMeta := []*ast.TColumnMeta{}
-
-	for currToken := tokens[curr]; delimeter.Equal(currToken); {
-		if curr >= uint(len(tokens)) {
-			return nil, inputCursor, false
-		}
-
-		if len(columnsMeta) > 0 {
-			var ok bool
-			_, curr, ok = parseToken(tokens, curr, *lexer.CommaToken.AsToken())
-			if !ok {
-				logInfo(tokens, curr, "Expected comma")
-				return nil, inputCursor, false
-			}
-		}
-
-		columnName, currCursor, ok := parseTokenType(tokens, curr, lexer.IdentifierType)
-		if !ok {
-			logInfo(tokens, curr, "Expected column name")
-			return nil, inputCursor, false
-		}
-		curr = currCursor
-
-		columnType, currCursor, ok := parseTokenType(tokens, curr, lexer.ReservedType)
-		if !ok {
-			logInfo(tokens, curr, "Expected column datatype definition")
-			return nil, inputCursor, false
-		}
-		curr = currCursor
-
-		columnsMeta = append(
-			columnsMeta,
-			&ast.TColumnMeta{Name: *columnName, Datatype: *columnType},
-		)
-	}
-
-	return &columnsMeta, curr, true
-}
-
 func parseExpression(
 	tokens []*lexer.TToken,
 	inputCursor uint,
@@ -167,6 +121,52 @@ outer:
 	}
 
 	return &expressions, curr, true
+}
+
+func parseColumnMeta(
+	tokens []*lexer.TToken,
+	inputCursor uint,
+	delimeter lexer.TToken,
+) (*[]*ast.TColumnMeta, uint, bool) {
+	curr := inputCursor
+
+	columnsMeta := []*ast.TColumnMeta{}
+
+	for currToken := tokens[curr]; delimeter.Equal(currToken); {
+		if curr >= uint(len(tokens)) {
+			return nil, inputCursor, false
+		}
+
+		if len(columnsMeta) > 0 {
+			var ok bool
+			_, curr, ok = parseToken(tokens, curr, *lexer.CommaToken.AsToken())
+			if !ok {
+				logInfo(tokens, curr, "Expected comma")
+				return nil, inputCursor, false
+			}
+		}
+
+		columnName, currCursor, ok := parseTokenType(tokens, curr, lexer.IdentifierType)
+		if !ok {
+			logInfo(tokens, curr, "Expected column name")
+			return nil, inputCursor, false
+		}
+		curr = currCursor
+
+		columnType, currCursor, ok := parseTokenType(tokens, curr, lexer.ReservedType)
+		if !ok {
+			logInfo(tokens, curr, "Expected column datatype definition")
+			return nil, inputCursor, false
+		}
+		curr = currCursor
+
+		columnsMeta = append(
+			columnsMeta,
+			&ast.TColumnMeta{Name: *columnName, Datatype: *columnType},
+		)
+	}
+
+	return &columnsMeta, curr, true
 }
 
 func parseSelectStatement(

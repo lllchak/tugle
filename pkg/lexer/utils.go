@@ -125,7 +125,7 @@ func (token *TToken) Equal(other *TToken) bool {
 func (reservedToken TReservedToken) AsToken() *TToken {
 	return &TToken{
 		Value: string(reservedToken),
-		Type:  IdentifierType,
+		Type:  ReservedType,
 	}
 }
 

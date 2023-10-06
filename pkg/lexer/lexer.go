@@ -199,7 +199,7 @@ func Tokenize(source string) ([]*TToken, error) {
 
 Tokenize:
 	for curr.CurrPos < uint(len(source)) {
-		lexers := []apply{CheckIdentifier, CheckNumeric, CheckReservedToken, CheckSymbol, CheckString}
+		lexers := []apply{CheckReservedToken, CheckSymbol, CheckString, CheckNumeric, CheckIdentifier}
 
 		for _, lexer := range lexers {
 			if token, currCursor, ok := lexer(source, curr); ok {
